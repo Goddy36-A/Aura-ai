@@ -31,6 +31,9 @@ jobs:
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
           sdkmanager "platforms;android-36" "build-tools;36.0.0" > /dev/null 2>&1 || true
 
+      - name: Write .env with real Gemini API key
+        run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
+
       - name: Build debug APK
         id: build
         shell: bash
