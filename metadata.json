@@ -1,0 +1,6 @@
+{
+  "name": "AI Co-Founder & Creative Studio",
+  "description": "An AI-powered founding partner and creative studio that generates brand kits, company graphics, certificates, reports, slide decks, product designs, and posters with live strategic advisory.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
