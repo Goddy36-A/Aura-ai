@@ -21,7 +21,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: 9.1.0
+          gradle-version: 9.3.1
 
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
@@ -55,8 +55,8 @@ jobs:
       - name: List build outputs
         if: always()
         run: |
-          FOUND=$(find app/build -type f \( -name "*.apk" -o -name "*.aab" \) 2>&1)
-          TREE=$(find app -maxdepth 4 -type d 2>&1 | tr '\n' ' | ')
+          FOUND=$(find app/build -type f \( -name "*.apk" -o -name "*.aab" \) 2>&1 || true)
+          TREE=$(find app -maxdepth 4 -type d 2>&1 | tr '\n' ' | ' || true)
           echo "::warning::APK_SEARCH=[${FOUND}] DIR_TREE=[${TREE}]"
 
       - name: Upload debug APK
