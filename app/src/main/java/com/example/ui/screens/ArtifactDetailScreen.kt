@@ -147,7 +147,7 @@ fun ArtifactDetailScreen(
                             null
                         }
                         if (spec != null) {
-                            BrandKitView(spec = spec)
+                            BrandKitView(spec = spec, logoImageBase64 = project.generatedImageBase64)
                         } else {
                             FallbackRawJsonView(project.jsonContent)
                         }
@@ -222,7 +222,7 @@ fun ArtifactDetailScreen(
 }
 
 @Composable
-private fun BrandKitView(spec: BrandKitSpec) {
+private fun BrandKitView(spec: BrandKitSpec, logoImageBase64: String?) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         // Hero Brand Title Card
         Surface(
@@ -305,7 +305,7 @@ private fun BrandKitView(spec: BrandKitSpec) {
                     )
                 )
 
-                val logoBase64 = project.generatedImageBase64
+                val logoBase64 = logoImageBase64
                 if (!logoBase64.isNullOrBlank()) {
                     val bitmap = remember(logoBase64) {
                         try {
