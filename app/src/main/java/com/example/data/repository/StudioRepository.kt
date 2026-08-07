@@ -15,11 +15,11 @@ class StudioRepository(
 ) {
     val allProjects: Flow<List<DesignProject>> = designDao.getAllProjects()
     val allMessages: Flow<List<CoFounderMessage>> = chatDao.getAllMessages()
+    private val jsonParser = Json { ignoreUnknownKeys = true }
 
     suspend fun ensureInitialDemoProjects() {
         val current = allProjects.first()
         if (current.isEmpty()) {
-            val jsonParser = Json { ignoreUnknownKeys = true }
             // 1. Brand Kit Demo
             val brandKitSpec = BrandKitSpec(
                 companyName = "Vanguard AI",
@@ -186,6 +186,27 @@ class StudioRepository(
             vibe = vibe,
             extraNotes = extraNotes
         )
+
+        // Brand kits get a real generated logo image, not just a text
+        // description. Other categories don't need this yet.
+        var logoImageBase64: String? = null
+        if (category == DesignCategory.BRAND_KIT) {
+            try {
+                val spec = jsonParser.decodeFromString(BrandKitSpec.serializer(), jsonSpec)
+                logoImageBase64 = aiService.generateLogoImage(
+                    companyName = spec.companyName,
+                    logoConcept = spec.logoConcept,
+                    vibe = vibe,
+                    primaryColorHex = spec.primaryColorHex,
+                    secondaryColorHex = spec.secondaryColorHex
+                )
+            } catch (e: Exception) {
+                // Spec parsing failed or image generation failed \u2014 fall
+                // back gracefully to the text-only concept, don't block
+                // project creation over it.
+            }
+        }
+
         val project = DesignProject(
             title = title.ifEmpty { "$companyName - ${category.displayName}" },
             category = category.name,
@@ -193,7 +214,8 @@ class StudioRepository(
             industry = industry,
             vibe = vibe,
             jsonContent = jsonSpec,
-            aiRationale = rationale
+            aiRationale = rationale,
+            generatedImageBase64 = logoImageBase64
         )
         return designDao.insertProject(project).toInt()
     }

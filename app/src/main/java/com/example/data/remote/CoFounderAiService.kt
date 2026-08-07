@@ -98,6 +98,71 @@ class CoFounderAiService {
         return@withContext getFallbackDesign(category, companyName, industry, vibe)
     }
 
+    suspend fun generateLogoImage(
+        companyName: String,
+        logoConcept: String,
+        vibe: String,
+        primaryColorHex: String,
+        secondaryColorHex: String
+    ): String? = withContext(Dispatchers.IO) {
+        val apiKey = BuildConfig.GEMINI_API_KEY
+        if (apiKey.isBlank() || apiKey.contains("MY_GEMINI") || apiKey.contains("YOUR_")) {
+            return@withContext null
+        }
+        try {
+            val prompt = """
+                Design a professional, modern vector-style logo icon for a company called "$companyName".
+                Concept direction: $logoConcept.
+                Overall brand vibe: $vibe.
+                Primary color: $primaryColorHex. Secondary color: $secondaryColorHex.
+                The logo should be a clean, centered icon mark suitable for an app icon or brand kit,
+                on a plain solid background, no mockup, no extra text other than possibly a short
+                wordmark of the company name if it fits naturally. High contrast, professional,
+                suitable for a real company brand identity, not a sketch or rough concept drawing.
+            """.trimIndent()
+
+            val requestJson = JSONObject().apply {
+                put("contents", JSONArray().put(JSONObject().apply {
+                    put("parts", JSONArray().put(JSONObject().apply {
+                        put("text", prompt)
+                    }))
+                }))
+                put("generationConfig", JSONObject().apply {
+                    put("responseModalities", JSONArray().put("IMAGE"))
+                })
+            }
+
+            val body = requestJson.toString().toRequestBody("application/json".toMediaType())
+            val httpRequest = Request.Builder()
+                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=$apiKey")
+                .post(body)
+                .build()
+
+            val response = okHttpClient.newCall(httpRequest).execute()
+            val responseString = response.body?.string() ?: ""
+            val resObj = JSONObject(responseString)
+            val candidates = resObj.optJSONArray("candidates") ?: return@withContext null
+            if (candidates.length() == 0) return@withContext null
+
+            val parts = candidates.getJSONObject(0)
+                .optJSONObject("content")
+                ?.optJSONArray("parts") ?: return@withContext null
+
+            for (i in 0 until parts.length()) {
+                val part = parts.getJSONObject(i)
+                val inlineData = part.optJSONObject("inlineData")
+                val data = inlineData?.optString("data")
+                if (!data.isNullOrBlank()) {
+                    return@withContext data
+                }
+            }
+            null
+        } catch (e: Exception) {
+            Log.w(tag, "Gemini image generation error: ${e.message}")
+            null
+        }
+    }
+
     suspend fun chatWithCoFounder(
         userMessage: String,
         persona: PartnerPersona,

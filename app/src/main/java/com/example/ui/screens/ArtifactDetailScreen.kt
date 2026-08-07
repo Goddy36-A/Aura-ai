@@ -15,6 +15,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -302,10 +304,36 @@ private fun BrandKitView(spec: BrandKitSpec) {
                         fontWeight = FontWeight.Bold
                     )
                 )
-                Text(
-                    text = "Logo Concept: ${spec.logoConcept}",
-                    style = MaterialTheme.typography.bodyMedium.copy(color = SlateTextDark)
-                )
+
+                val logoBase64 = project.generatedImageBase64
+                if (!logoBase64.isNullOrBlank()) {
+                    val bitmap = remember(logoBase64) {
+                        try {
+                            val bytes = android.util.Base64.decode(logoBase64, android.util.Base64.DEFAULT)
+                            android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+                                ?.asImageBitmap()
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
+                    if (bitmap != null) {
+                        androidx.compose.foundation.Image(
+                            bitmap = bitmap,
+                            contentDescription = "${spec.companyName} logo",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(1f)
+                                .clip(RoundedCornerShape(16.dp)),
+                            contentScale = ContentScale.Crop
+                        )
+                    }
+                } else {
+                    Text(
+                        text = "Logo Concept: ${spec.logoConcept}",
+                        style = MaterialTheme.typography.bodyMedium.copy(color = SlateTextDark)
+                    )
+                }
+
                 Divider(color = SlateBackground)
                 Row(
                     modifier = Modifier.fillMaxWidth(),
