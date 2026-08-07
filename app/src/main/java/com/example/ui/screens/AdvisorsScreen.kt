@@ -92,7 +92,9 @@ fun AdvisorsScreen(
                             focusedContainerColor = SlateBackground,
                             unfocusedContainerColor = SlateBackground,
                             focusedBorderColor = IndigoPrimary,
-                            unfocusedBorderColor = SlateTextMuted.copy(alpha = 0.3f)
+                            unfocusedBorderColor = SlateTextMuted.copy(alpha = 0.3f),
+                            focusedTextColor = SlateTextDark,
+                            unfocusedTextColor = SlateTextDark
                         ),
                         singleLine = true
                     )

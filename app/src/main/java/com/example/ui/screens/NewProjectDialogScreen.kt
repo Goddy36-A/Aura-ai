@@ -132,7 +132,11 @@ fun NewProjectDialogScreen(
                     label = { Text("Venture Name") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = SlateTextDark,
+                        unfocusedTextColor = SlateTextDark
+                    )
                 )
 
                 OutlinedTextField(
@@ -141,7 +145,11 @@ fun NewProjectDialogScreen(
                     label = { Text("Industry / Domain") },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = SlateTextDark,
+                        unfocusedTextColor = SlateTextDark
+                    )
                 )
 
                 Text(
@@ -185,7 +193,11 @@ fun NewProjectDialogScreen(
                     placeholder = { Text("e.g. Include metrics about 10x ROI for series A deck") },
                     modifier = Modifier.fillMaxWidth(),
                     maxLines = 3,
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedTextColor = SlateTextDark,
+                        unfocusedTextColor = SlateTextDark
+                    )
                 )
 
                 // Action buttons

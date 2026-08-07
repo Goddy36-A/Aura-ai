@@ -39,7 +39,13 @@ private val LightColorScheme =
 
 @Composable
 fun MyApplicationTheme(
-  darkTheme: Boolean = isSystemInDarkTheme(),
+  // This app's screens use hardcoded light backgrounds (white dialogs,
+  // SlateBackground input fields) that were never paired with matching
+  // dark-mode text colors. Following the system's dark mode caused
+  // near-white text to render on those light containers = invisible input.
+  // Forcing light mode here fixes it everywhere at once until every screen
+  // is properly dark-mode-audited.
+  darkTheme: Boolean = false,
   dynamicColor: Boolean = false,
   content: @Composable () -> Unit,
 ) {

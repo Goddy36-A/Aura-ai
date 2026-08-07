@@ -213,7 +213,9 @@ fun ChatScreen(
                         focusedContainerColor = SlateBackground,
                         unfocusedContainerColor = SlateBackground,
                         focusedBorderColor = IndigoPrimary,
-                        unfocusedBorderColor = Color.Transparent
+                        unfocusedBorderColor = Color.Transparent,
+                        focusedTextColor = SlateTextDark,
+                        unfocusedTextColor = SlateTextDark
                     ),
                     maxLines = 3,
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
