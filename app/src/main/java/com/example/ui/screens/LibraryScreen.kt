@@ -156,6 +156,17 @@ private fun LibraryProjectCard(
                 .padding(18.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            if (!project.generatedImageBase64.isNullOrBlank()) {
+                coil.compose.AsyncImage(
+                    model = project.generatedImageBase64,
+                    contentDescription = "${project.title} thumbnail",
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(140.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                )
+            }
             // Header: Category chip + Favorite + Delete
             Row(
                 modifier = Modifier.fillMaxWidth(),

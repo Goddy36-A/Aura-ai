@@ -34,17 +34,6 @@ jobs:
       - name: Write .env with real Gemini API key
         run: echo "GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}" > .env
 
-      - name: Diagnose Gemini image API call
-        run: |
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-3.1-flash-image-preview:generateContent?key=${{ secrets.GEMINI_API_KEY }}" \
-            -H "Content-Type: application/json" \
-            -d '{"contents":[{"parts":[{"text":"A simple minimalist blue circle logo icon"}]}],"generationConfig":{"responseModalities":["IMAGE"]}}')
-          STATUS=$(echo "$RESPONSE" | grep -o 'HTTP_STATUS:[0-9]*' | cut -d: -f2)
-          BODY=$(echo "$RESPONSE" | sed 's/HTTP_STATUS:[0-9]*$//')
-          CLEAN=$(echo "$BODY" | head -c 1500 | sed 's/%/%25/g; s/\r/%0D/g' | tr '\n' ' ')
-          echo "::warning::GEMINI_IMAGE_API_STATUS=[${STATUS}] BODY_PREVIEW=[${CLEAN}]"
-
       - name: Build debug APK
         id: build
         shell: bash

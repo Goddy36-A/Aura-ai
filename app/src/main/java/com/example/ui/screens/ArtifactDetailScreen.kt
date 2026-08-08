@@ -167,7 +167,7 @@ fun ArtifactDetailScreen(
                             jsonParser.decodeFromString<SlideDeckSpec>(project.jsonContent)
                         } catch (e: Exception) { null }
                         if (spec != null) {
-                            SlideDeckView(spec = spec)
+                            SlideDeckView(spec = spec, coverImageUrl = project.generatedImageBase64)
                         } else {
                             FallbackRawJsonView(project.jsonContent)
                         }
@@ -187,7 +187,7 @@ fun ArtifactDetailScreen(
                             jsonParser.decodeFromString<CompanyGraphicSpec>(project.jsonContent)
                         } catch (e: Exception) { null }
                         if (spec != null) {
-                            CompanyGraphicView(spec = spec)
+                            CompanyGraphicView(spec = spec, imageUrl = project.generatedImageBase64)
                         } else {
                             FallbackRawJsonView(project.jsonContent)
                         }
@@ -197,7 +197,7 @@ fun ArtifactDetailScreen(
                             jsonParser.decodeFromString<ProductDesignSpec>(project.jsonContent)
                         } catch (e: Exception) { null }
                         if (spec != null) {
-                            ProductDesignView(spec = spec)
+                            ProductDesignView(spec = spec, imageUrl = project.generatedImageBase64)
                         } else {
                             FallbackRawJsonView(project.jsonContent)
                         }
@@ -207,7 +207,7 @@ fun ArtifactDetailScreen(
                             jsonParser.decodeFromString<PosterSpec>(project.jsonContent)
                         } catch (e: Exception) { null }
                         if (spec != null) {
-                            PosterView(spec = spec)
+                            PosterView(spec = spec, imageUrl = project.generatedImageBase64)
                         } else {
                             FallbackRawJsonView(project.jsonContent)
                         }
@@ -305,28 +305,17 @@ private fun BrandKitView(spec: BrandKitSpec, logoImageBase64: String?) {
                     )
                 )
 
-                val logoBase64 = logoImageBase64
-                if (!logoBase64.isNullOrBlank()) {
-                    val bitmap = remember(logoBase64) {
-                        try {
-                            val bytes = android.util.Base64.decode(logoBase64, android.util.Base64.DEFAULT)
-                            android.graphics.BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
-                                ?.asImageBitmap()
-                        } catch (e: Exception) {
-                            null
-                        }
-                    }
-                    if (bitmap != null) {
-                        androidx.compose.foundation.Image(
-                            bitmap = bitmap,
-                            contentDescription = "${spec.companyName} logo",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(1f)
-                                .clip(RoundedCornerShape(16.dp)),
-                            contentScale = ContentScale.Crop
-                        )
-                    }
+                val logoUrl = logoImageBase64
+                if (!logoUrl.isNullOrBlank()) {
+                    coil.compose.AsyncImage(
+                        model = logoUrl,
+                        contentDescription = "${spec.companyName} logo",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .aspectRatio(1f)
+                            .clip(RoundedCornerShape(16.dp)),
+                        contentScale = ContentScale.Crop
+                    )
                 } else {
                     Text(
                         text = "Logo Concept: ${spec.logoConcept}",
@@ -351,6 +340,20 @@ private fun BrandKitView(spec: BrandKitSpec, logoImageBase64: String?) {
             }
         }
     }
+}
+
+@Composable
+private fun GeneratedImageBanner(imageUrl: String?, contentDescription: String) {
+    if (imageUrl.isNullOrBlank()) return
+    coil.compose.AsyncImage(
+        model = imageUrl,
+        contentDescription = contentDescription,
+        modifier = Modifier
+            .fillMaxWidth()
+            .aspectRatio(16f / 9f)
+            .clip(RoundedCornerShape(16.dp)),
+        contentScale = ContentScale.Crop
+    )
 }
 
 @Composable
@@ -481,8 +484,10 @@ private fun CertificateView(spec: CertificateSpec) {
 }
 
 @Composable
-private fun SlideDeckView(spec: SlideDeckSpec) {
+private fun SlideDeckView(spec: SlideDeckSpec, coverImageUrl: String? = null) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        GeneratedImageBanner(imageUrl = coverImageUrl, contentDescription = "${spec.deckTitle} cover art")
+
         Surface(
             modifier = Modifier.fillMaxWidth(),
             color = IndigoDark,
@@ -615,7 +620,9 @@ private fun ReportView(spec: ReportSpec) {
 }
 
 @Composable
-private fun CompanyGraphicView(spec: CompanyGraphicSpec) {
+private fun CompanyGraphicView(spec: CompanyGraphicSpec, imageUrl: String? = null) {
+  Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    GeneratedImageBanner(imageUrl = imageUrl, contentDescription = "${spec.headline} graphic")
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = IndigoDark,
@@ -665,10 +672,11 @@ private fun CompanyGraphicView(spec: CompanyGraphicSpec) {
             }
         }
     }
+  }
 }
 
 @Composable
-private fun ProductDesignView(spec: ProductDesignSpec) {
+private fun ProductDesignView(spec: ProductDesignSpec, imageUrl: String? = null) {
     Surface(
         color = Color.White,
         shape = RoundedCornerShape(24.dp),
@@ -678,6 +686,7 @@ private fun ProductDesignView(spec: ProductDesignSpec) {
             modifier = Modifier.padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
+            GeneratedImageBanner(imageUrl = imageUrl, contentDescription = "${spec.productName} mockup")
             Text(spec.productCategory, style = MaterialTheme.typography.labelSmall.copy(color = IndigoPrimary, fontWeight = FontWeight.Bold))
             Text(spec.productName, style = MaterialTheme.typography.titleLarge.copy(color = SlateTextDark, fontWeight = FontWeight.Bold))
             Text(spec.designTagline, style = MaterialTheme.typography.bodyMedium.copy(color = SlateTextMuted))
@@ -699,7 +708,7 @@ private fun ProductDesignView(spec: ProductDesignSpec) {
 }
 
 @Composable
-private fun PosterView(spec: PosterSpec) {
+private fun PosterView(spec: PosterSpec, imageUrl: String? = null) {
     Surface(
         modifier = Modifier.fillMaxWidth(),
         color = Color(0xFF1E293B),
@@ -709,6 +718,7 @@ private fun PosterView(spec: PosterSpec) {
             modifier = Modifier.padding(24.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp)
         ) {
+            GeneratedImageBanner(imageUrl = imageUrl, contentDescription = "${spec.eventTitle} poster art")
             Text(spec.subtitle, style = MaterialTheme.typography.labelSmall.copy(color = AccentGold, fontWeight = FontWeight.Bold))
             Text(spec.eventTitle, style = MaterialTheme.typography.headlineSmall.copy(color = Color.White, fontWeight = FontWeight.Bold))
             Text(spec.dateAndLocation, style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.8f)))

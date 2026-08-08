@@ -29,5 +29,9 @@ data class DesignProject(
     val isFavorite: Boolean = false,
     val jsonContent: String = "{}",
     val aiRationale: String = "",
+    // Despite the name, this now typically holds an image URL (from
+    // Pollinations.ai) rather than raw base64 \u2014 kept as the original
+    // field name to avoid a Room schema migration. Render it via Coil's
+    // AsyncImage, which handles both URLs and data URIs.
     val generatedImageBase64: String? = null
 )

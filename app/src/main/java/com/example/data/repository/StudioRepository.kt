@@ -187,24 +187,55 @@ class StudioRepository(
             extraNotes = extraNotes
         )
 
-        // Brand kits get a real generated logo image, not just a text
-        // description. Other categories don't need this yet.
-        var logoImageBase64: String? = null
-        if (category == DesignCategory.BRAND_KIT) {
-            try {
-                val spec = jsonParser.decodeFromString(BrandKitSpec.serializer(), jsonSpec)
-                logoImageBase64 = aiService.generateLogoImage(
-                    companyName = spec.companyName,
-                    logoConcept = spec.logoConcept,
-                    vibe = vibe,
-                    primaryColorHex = spec.primaryColorHex,
-                    secondaryColorHex = spec.secondaryColorHex
-                )
-            } catch (e: Exception) {
-                // Spec parsing failed or image generation failed \u2014 fall
-                // back gracefully to the text-only concept, don't block
-                // project creation over it.
+        // Build a tailored image prompt per category. Categories that are
+        // fundamentally text/structured documents (Certificate, Report)
+        // stay text-only for now \u2014 an image there would be decorative
+        // rather than the actual content.
+        var artifactImageUrl: String? = null
+        try {
+            val imagePrompt: String? = when (category) {
+                DesignCategory.BRAND_KIT -> {
+                    val spec = jsonParser.decodeFromString(BrandKitSpec.serializer(), jsonSpec)
+                    "Professional modern vector-style logo icon for a company called " +
+                        "\"${spec.companyName}\". Concept: ${spec.logoConcept}. Brand vibe: $vibe. " +
+                        "Primary color ${spec.primaryColorHex}, secondary color ${spec.secondaryColorHex}. " +
+                        "Clean centered icon mark on a plain solid background, no mockup, high contrast, " +
+                        "professional brand identity quality, not a rough sketch."
+                }
+                DesignCategory.POSTER -> {
+                    val spec = jsonParser.decodeFromString(PosterSpec.serializer(), jsonSpec)
+                    "Professional event poster background art for \"${spec.eventTitle}\", " +
+                        "${spec.subtitle}. Style: $vibe, theme ${spec.badgeTheme}. Bold modern " +
+                        "graphic design, no readable text in the image, abstract shapes and " +
+                        "lighting suitable as a poster backdrop for $companyName."
+                }
+                DesignCategory.COMPANY_GRAPHIC -> {
+                    val spec = jsonParser.decodeFromString(CompanyGraphicSpec.serializer(), jsonSpec)
+                    "Modern company announcement banner background graphic, layout style " +
+                        "${spec.layoutStyle}, brand vibe $vibe, for $companyName in the $industry " +
+                        "industry. Bold abstract shapes, no readable text in the image, professional " +
+                        "marketing graphic quality."
+                }
+                DesignCategory.PRODUCT_DESIGN -> {
+                    val spec = jsonParser.decodeFromString(ProductDesignSpec.serializer(), jsonSpec)
+                    "Premium product mockup photo of \"${spec.productName}\", ${spec.productCategory}. " +
+                        "Materials and finish: ${spec.materialsAndFinish}. Studio product photography, " +
+                        "$vibe aesthetic, clean background, professional catalog quality."
+                }
+                DesignCategory.SLIDE_DECK -> {
+                    val spec = jsonParser.decodeFromString(SlideDeckSpec.serializer(), jsonSpec)
+                    "Investor pitch deck cover slide background art for \"${spec.deckTitle}\", " +
+                        "${spec.deckSubtitle}, for $companyName. Style: $vibe. Abstract professional " +
+                        "presentation background, no readable text in the image."
+                }
+                else -> null
             }
+            if (imagePrompt != null) {
+                artifactImageUrl = aiService.generateArtifactImage(imagePrompt)
+            }
+        } catch (e: Exception) {
+            // Spec parsing or image URL build failed \u2014 fall back gracefully
+            // to text-only content, don't block project creation over it.
         }
 
         val project = DesignProject(
@@ -215,7 +246,7 @@ class StudioRepository(
             vibe = vibe,
             jsonContent = jsonSpec,
             aiRationale = rationale,
-            generatedImageBase64 = logoImageBase64
+            generatedImageBase64 = artifactImageUrl
         )
         return designDao.insertProject(project).toInt()
     }
